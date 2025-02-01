@@ -14,7 +14,7 @@ const ArticleList = ({ quality, articles }) => {
                                 name={article.nombre}
                                 description={article.mapa}
                                 
-                                image={"https://lobasvip.com.ve/storage/" + article?.media[0]?.file_path}
+                                image={"https://lobasvip.com.ve/" + article?.media[0]?.file_path}
                             />
                         </div>
                     ))}

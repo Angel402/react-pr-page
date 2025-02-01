@@ -56,7 +56,7 @@ const Galeria = ({ items }) => {
             >
             {item.type === "image" ? (
                 <img
-                src={"https://lobasvip.com.ve/storage/"+item.file_path}
+                src={"https://lobasvip.com.ve/"+item.file_path}
                 alt={item.alt || "Foto"}
                 style={{
                     maxWidth: "100%",

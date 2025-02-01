@@ -96,7 +96,7 @@ const ArticleDetails = () => {
             }}
           >
             <img
-              src={"https://lobasvip.com.ve/storage/" + data?.media[0].file_path}
+              src={"https://lobasvip.com.ve/" + data?.media[0].file_path}
               alt="Imagen de la persona"
               className="rounded-circle"
               style={{
