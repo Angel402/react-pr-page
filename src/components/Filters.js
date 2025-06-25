@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import DistanceSlider from "./DistanceSlider";
 
-const Filters = ({ setFilters, zones }) => {
-    const possibleCategory = [
+const Filters = ({ setFilters, zones, cities }) => {
+    const possibleCategories = [
         "Dama",
         "Virtual",
         "Dama Virtual",
@@ -17,10 +17,12 @@ const Filters = ({ setFilters, zones }) => {
     const [selectedZone, setSelectedZone] = useState("");
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [activeFilter, setActiveFilter] = useState(null);
+    const [selectedCity, setSelectedCity] = useState(""); // Nuevo estado para la ciudad
     const [distance, setDistance] = useState(0);
     const buttonRefs = {
         name: useRef(null),
         zone: useRef(null),
+        city: useRef(null), // Referencia para el botón de ciudad
         category: useRef(null),
     };
 
@@ -31,6 +33,14 @@ const Filters = ({ setFilters, zones }) => {
             categories: selectedCategories,
         }));
     }, [selectedCategories, setFilters]);
+
+    // Sync selectedCity with filters state
+    useEffect(() => {
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            city: selectedCity,
+        }));
+    }, [selectedCity, setFilters]);
 
     const handleSearchChange = (e) => {
         setSearchName(e.target.value);
@@ -56,6 +66,14 @@ const Filters = ({ setFilters, zones }) => {
                 : [...prev, value];
             return newCategories;
         });
+    };
+
+    const handleCityChange = (e) => {
+        setSelectedCity(e.target.value);
+        setFilters((prev) => ({
+            ...prev,
+            city: e.target.value,
+        }));
     };
 
     const handleFilterToggle = (filterName) => {
@@ -84,6 +102,16 @@ const Filters = ({ setFilters, zones }) => {
             ...prevFilters,
             distance: distance,
         }));
+    };
+
+    useEffect(() => {
+        // Aquí pones la función o el código que quieres ejecutar
+        console.log('El valor de distance ha cambiado a:', distance);
+        ejecutarFuncionCuandoCambieDistance(distance);
+    }, [distance]);
+
+    const ejecutarFuncionCuandoCambieDistance = (nuevoValorDistance) => {
+        console.log('Se está ejecutando la función porque distance cambió a:', nuevoValorDistance);
     };
 
     return (
@@ -131,6 +159,19 @@ const Filters = ({ setFilters, zones }) => {
                     Categoría
                 </button>
 
+                <button
+                    ref={buttonRefs.city} // Referencia para el botón de ciudad
+                    className="btn me-2"
+                    type="button"
+                    style={{
+                        width: "auto",
+                        backgroundColor: "var(--special-background-color)",
+                        color: "var(--special-color)",
+                    }}
+                    onClick={() => handleFilterToggle("city")}
+                >
+                    Ciudad
+                </button>
                 <DistanceSlider value={distance} onChange={handleFilterDistance} />
             </div>
 
@@ -189,8 +230,8 @@ const Filters = ({ setFilters, zones }) => {
                         left: `${getFilterPosition("category").left}px`,
                     }}
                 >
-                    {possibleCategory.map((category, index) => (
-                        <div key={index} className="form-check">
+                    {possibleCategories.map((category) => (
+                        <div key={category} className="form-check">
                             <input
                                 className="form-check-input model-tag"
                                 style={{ borderColor: "var(--tag-color)" }}
@@ -202,6 +243,28 @@ const Filters = ({ setFilters, zones }) => {
                             <label className="form-check-label">{category}</label>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {activeFilter === "city" && (
+                <div
+                    className="position-absolute mt-2 p-3 model-tag rounded shadow"
+                    style={{
+                        zIndex: 1050,
+                        top: `${getFilterPosition("city").top}px`,
+                        left: `${getFilterPosition("city").left}px`,
+                    }}
+                >
+                    <select
+                        className="form-select model-tag"
+                        style={{ borderColor: "var(--tag-color)" }}
+                        value={selectedCity}
+                        onChange={handleCityChange}
+                    >
+                        <option value="">Todas las ciudades</option>
+                        {/* Render options from the 'cities' prop */}
+                        {cities.map((city) => (<option key={city} value={city}>{city}</option>))}
+                    </select>
                 </div>
             )}
         </div>

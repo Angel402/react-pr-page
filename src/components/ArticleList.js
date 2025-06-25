@@ -15,7 +15,7 @@ const ArticleList = ({ quality, articles }) => {
                             <Article
                                 id={article.id}
                                 name={article.tags.find((tag) => tag.tipo === "nombre")?.valor}
-                                description={article.tags.find((tag) => tag.tipo === "nacionalidad")?.valor}
+                                description={article.tags.find((tag) => tag.tipo === "nacionalidad")?.valor + " - "+article.tags.find((tag) => tag.tipo === "ciudad")?.valor}
                                 image={article?.media[0]?.file_path}
                             />
                         </div>

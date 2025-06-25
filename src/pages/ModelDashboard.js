@@ -92,7 +92,7 @@ export default function ModelDashboard (){
                         {(fieldSelected === 1) && (<DashboardPersonalData hasDafault={modelData === undefined} data={modelData} id={modelData?.user_id}/>)}
                         {fieldSelected === 2 && (<RequestUploadMedia modelName={modelData?.nombre}/>)}
                         {fieldSelected === 3 && (<>
-                            <Graphics />                       
+                            {/* <Graphics />                        */}
                         </>)}
                         {fieldSelected === 4 && (<ClientSupport />)}
                         {fieldSelected === 5 && (<>Preguntas frecuentes</>)}
