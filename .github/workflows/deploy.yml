@@ -1,0 +1,51 @@
+name: Deploy React App via FTP
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - deploy
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: 📥 Checkout del código
+        uses: actions/checkout@v4
+
+      - name: 📦 Instalar dependencias
+        run: npm install
+
+      - name: 📄 Crear archivo .env con variables de producción
+        run: |
+          echo "REACT_APP_API_BASE_URL=${{ secrets.REACT_APP_API_BASE_URL }}" >> .env
+          echo "REACT_APP_MEDIA_BASE_URL=${{ secrets.REACT_APP_MEDIA_BASE_URL }}" >> .env
+
+      - name: ⚙️ Construir la aplicación (Modo Producción)
+        run: CI=false npm run build
+
+      - name: 🔍 Verificar si la carpeta build existe
+        run: ls -la build
+
+      - name: 🛠 Instalar herramientas FTP
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: 🚀 Subir archivos al servidor por FTP
+        run: |
+          echo "Uploading project files to ${{ secrets.FTP_DEPLOY_PATH }}..."
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" ${{ secrets.FTP_HOST }} <<EOF
+          set ftp:ssl-allow no
+          set ftp:list-options -a
+          mirror -R --verbose --parallel=5 \
+            --exclude-glob=.git \
+            --exclude-glob=.git/** \
+            --exclude-glob=node_modules \
+            --exclude-glob=node_modules/** \
+            --exclude-glob=src \
+            --exclude-glob=src/** \
+            build/ ${{ secrets.FTP_DEPLOY_PATH }}
+          bye
+          EOF
+          echo "Upload completed!"

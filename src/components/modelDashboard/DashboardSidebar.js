@@ -23,7 +23,7 @@ export default function DashboardSidebar({data, setFieldSelected}){
         <p className="text-center">Offline</p>
         <DashboardSectionSelector fieldId={1} onClick={setFieldSelected}>Datos Personales</DashboardSectionSelector>
         <DashboardSectionSelector fieldId={2} onClick={setFieldSelected}>Solicitar subida de multimedia</DashboardSectionSelector>
-        <DashboardSectionSelector fieldId={3} onClick={setFieldSelected}>Graficas</DashboardSectionSelector>
+        {/* <DashboardSectionSelector fieldId={3} onClick={setFieldSelected}>Graficas</DashboardSectionSelector> */}
         <DashboardSectionSelector fieldId={4} onClick={setFieldSelected}>Soporte a cliente</DashboardSectionSelector>
         <DashboardSectionSelector fieldId={5} onClick={setFieldSelected}>Preguntas frecuentes</DashboardSectionSelector>
     </div>);
