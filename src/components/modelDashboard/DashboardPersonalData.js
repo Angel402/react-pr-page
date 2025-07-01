@@ -10,6 +10,7 @@ import BaseModal from "../BaseModal";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import { getCountries } from "@yusifaliyevpro/countries";
+import MapSection from "./MapSection";
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function DashboardPersonalData({ hasDafault, data, id }) {
@@ -29,7 +30,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         "Lésbicos", "Poses varias", "Besos", "Bailes"];
     const days = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
     const uniqueTypes = ["nombre", "edad", "estatura", "peso", "medidas", "nacionalidad", "about_me", "cabello", "ojos", "piel", "depilacion", "cuerpo", "busto",
-        "cola", "biotipo", "categoria", "ciudad", "tel_whatssapp", "tel_telegram", "KYC_name", "KYC_date", "KYC_ID", "mapa"];
+        "cola", "biotipo", "categoria", "ciudad", "tel_whatssapp", "tel_telegram", "KYC_name", "KYC_date", "KYC_ID", "mapa", "nacionalidad"];
 
 
     const [showedDropdown, setShowedDropdown] = useState(0);
@@ -39,9 +40,11 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
     const [errorMessage, setErrorMessage] = useState("");
 
     const [selectedCategory, setSelectedCategory] = useState("");
+    const [nationality, setNationality] = useState("");
     const [selectedCountry, setSelectedCountry] = useState("");
     const [filteredCities, setFilteredCities] = useState([]);
     const [selectedCity, setSelectedCity] = useState("");
+    const [coords, setCoords] = useState("");
 
     useEffect(() => {
         if (Array.isArray(countries) && countries.length > 0 && selectedCountry) {
@@ -68,6 +71,8 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
             console.log('Ciudad seleccionada:', cityNames.city);
             console.log('Latitud:', cityNames.lat);
             console.log('Longitud:', cityNames.lng);
+            if (selectedCity === data.tags.find((a) => a.tipo === "ciudad")?.valor && coords === data.tags.find((a) => a.tipo === "mapa")?.valor) return;
+            setCoords(`${cityNames.lat},${cityNames.lng}`);
             let token = getCookie("token");
 
             var myHeaders = new Headers();
@@ -93,6 +98,10 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
                 .catch(error => console.log('error', error));
         }
     }, [selectedCity]);
+
+    useEffect(()=>{
+        console.log(coords);
+    }, [coords]);
 
     const handleCityChangeLogic = (cityValue) => {
         console.log('Ciudad seleccionada:', cityValue);
@@ -204,7 +213,8 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         setHeight(data.tags.find((a) => a.tipo === "estatura")?.valor);
         setWeight(data.tags.find((a) => a.tipo === "peso")?.valor);
         if (data.tags.find((a) => a.tipo === "medidas")) parseMeasurements(data.tags.find((a) => a.tipo === "medidas")?.valor);
-        setSelectedCountry(data.tags.find((a) => a.tipo === "nacionalidad")?.valor);
+        setSelectedCountry(data.tags.find((a) => a.tipo === "country")?.valor);
+        setNationality(data.tags.find((a) => a.tipo === "nacionalidad")?.valor);
         setDescription(data.tags.find((a) => a.tipo === "about_me")?.valor);
         setHair(data.tags.find((a) => a.tipo === "cabello")?.valor);
         setEyes(data.tags.find((a) => a.tipo === "ojos")?.valor);
@@ -222,6 +232,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         setSelectedVirtuals(data.tags.filter(item => item.tipo === "servicios_virtuales").map((a) => a.valor));
         setSelectedAditionals(data.tags.filter(item => item.tipo === "adicionales").map((a) => a.valor));
         setSelectedCity(data.tags.find((a) => a.tipo === "ciudad")?.valor);
+        setCoords(data.tags.find((a) => a.tipo === "mapa")?.valor);
         if (data.tags.find((a) => a.tipo === "horario")) parseAvailabilityString(data.tags.find((a) => a.tipo === "horario").valor)
         const telTag = data.tags.find((a) => a.tipo === "tel_whatssapp");
         if (telTag?.valor) {
@@ -306,7 +317,8 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         tagList.push({ tipo: "peso", valor: weight });
         if (bodyMeasurements.busto && bodyMeasurements.cintura && bodyMeasurements.cadera)
             tagList.push({ tipo: "medidas", valor: `${bodyMeasurements.busto}/${bodyMeasurements.cintura}/${bodyMeasurements.cadera}` });
-        tagList.push({ tipo: "nacionalidad", valor: selectedCountry });
+        tagList.push({ tipo: "nacionalidad", valor: nationality });
+        tagList.push({ tipo: "country", valor: selectedCountry });
         tagList.push({ tipo: "about_me", valor: description });
         tagList.push({ tipo: "cabello", valor: hair });
         tagList.push({ tipo: "ojos", valor: eyes });
@@ -324,6 +336,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         tagList = [...tagList, ...selectedVirtuals.map(value => ({ tipo: "servicios_virtuales", valor: value }))];
         tagList = [...tagList, ...selectedAditionals.map(value => ({ tipo: "adicionales", valor: value }))];
         tagList.push({ tipo: "ciudad", valor: selectedCity });
+        tagList.push({ tipo: "mapa", valor: coords });
         tagList.push({ tipo: "horario", valor: formatAvailabilityString(horaInicio, horaFin, diasSeleccionados) })
         if (whatsappExtention && whatsapp) tagList.push({ tipo: "tel_whatssapp", valor: whatsappExtention + "|" + whatsapp });
         tagList.push({ tipo: "tel_telegram", valor: telegram });
@@ -373,49 +386,6 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
             }
         });
 
-        const cityTag = tagsToDelete.find(tag => tag.tipo === "ciudad");
-        if (cityTag) {
-            const mapTag = newTags.find(tag => tag.tipo === "mapa");
-            if (mapTag)
-                tagsToDelete.push(mapTag);
-        }
-
-        const cityUpdateTag = tagsToUpdate.find(t => t.tipo === "ciudad");
-
-        if (cityUpdateTag) {
-            const coordsTag = oldTags.find(t => t.tipo === "mapa");
-            try {
-                const countryCode = countries.find(f => f.name === selectedCountry)?.code;
-                if (!countryCode) throw new Error("No se encontró el código del país.");
-
-                const city = cityUpdateTag.valor;
-                const country = selectedCountry;
-
-                const coordRes = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&countrycodes=${countryCode}&format=json`);
-                const coordData = await coordRes.json();
-
-                if (!coordData.length) throw new Error("No se encontraron coordenadas para la ciudad especificada.");
-
-                const { lat, lon } = coordData[0];
-
-                if (coordsTag) {
-                    coordsTag.valor = `${lat},${lon}`;
-                    tagsToUpdate.push(coordsTag);
-                    newTags.push(coordsTag);
-                } else {
-                    tagsToAdd.push({
-                        tipo: "mapa",
-                        valor: `${lat},${lon}`
-                    });
-                }
-
-            } catch (error) {
-                console.warn("No se pudieron obtener nuevas coordenadas:", error);
-                if (coordsTag)
-                    tagsToDelete.push(coordsTag);
-            }
-        }
-
         oldTags.forEach(tag => {
             if (tag.tipo === "views") return;
             const key = `${tag.tipo}:${tag.valor}`;
@@ -460,32 +430,6 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
             }
 
             if (tagsToAdd.length > 0) {
-                const cityTag = tagsToAdd.find(tag => tag.tipo === "ciudad");
-                if (cityTag) {
-                    try {
-                        const countryCode = countries.find(f => f.name === selectedCountry)?.code;
-                        if (!countryCode) throw new Error("No se encontró el código del país.");
-
-                        const city = cityTag.valor;
-                        const country = selectedCountry;
-
-                        const coordRes = await fetch(`https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&countrycodes=${countryCode}&format=json`);
-                        const coordData = await coordRes.json();
-
-                        if (!coordData.length) throw new Error("No se encontraron coordenadas para la ciudad especificada.");
-
-                        const { lat, lon } = coordData[0];
-
-                        tagsToAdd.push({
-                            tipo: "mapa",
-                            valor: `${lat},${lon}`
-                        });
-
-                    } catch (error) {
-                        console.warn("No se pudo obtener coordenadas:", error);
-                    }
-                }
-
                 const response = await fetch(`${API_BASE_URL}tags/add/${data.id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -560,7 +504,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
                     setErrorMessage("Tus medidas deben estar entre 0 y 200 (cm)");
                     return;
                 }
-                if (!countries.map((a) => a.name).includes(selectedCountry)) {
+                if (!countries.map((a) => a.name).includes(nationality  )) {
                     setErrorMessage("Selecciona un pais");
                     return;
                 }
@@ -597,10 +541,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
                     return;
                 }
                 break;
-            case 3:
-
-                break;
-            case 4:
+            case 5:
                 if (!fullName || fullName.length < 5 || fullName.length > 50) {
                     setErrorMessage("Ingresa un nombre valido");
                     return;
@@ -697,11 +638,11 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
             </div>
             <DashboardDropDown
                 onClick={() => { handleClickDropDown(3); }}
-                value={selectedCountry}
+                value={nationality}
                 onChange={(e) => {
-                    setSelectedCountry(e.target.value);
+                    setNationality(e.target.value);
                 }}
-                placeHolder={"Selecciona tu nacionalidad"}
+                placeHolder={"Selecciona tu pais de nacimiento"}
                 itemsToMap={countries.map(country => country.name)}
             />
             <DashboardTextArea
@@ -812,24 +753,20 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         </>)}
 
         {currentStep === 3 && (<>
-            {cities <= 0 && (<>
-                <select
-                    className="form-select model-tag m-auto mt-2"
-                    style={{ borderColor: "var(--tag-color)", width: "70%" }}
-                    onClick={() => { handleClickDropDown(15); }}
-                >
-                    <option value="">Selecciona antes un pais para poder elegir una ciudad</option>
-                </select>
-            </>)}
-            {cities.length > 0 && (<>
-                <DashboardDropDown
-                    onClick={() => { handleClickDropDown(16); }}
-                    value={selectedCity}
-                    onChange={handleCityChange}
-                    placeHolder={"Selecciona tu ciudad o la mas cercana si no se encuentra"}
-                    itemsToMap={cities}
-                />
-            </>)}
+            <MapSection
+                cities={cities}
+                countries={countries}
+                selectedCountry={selectedCountry}
+                setSelectedCountry={setSelectedCountry}
+                handleClickDropDown={handleClickDropDown}
+                selectedCity={selectedCity}
+                handleCityChange={handleCityChange}
+                coords={coords}
+                setCoords={setCoords}
+            />
+        </>)}
+
+        {currentStep === 4 && (<>
             <div className="m-auto mt-2 row" style={{ width: "70%" }}>
                 <div className="col-md-4 px-1">
                     <p className="m-0 text-center">Disponible desde las:</p>
@@ -914,7 +851,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
 
         </>)}
 
-        {currentStep === 4 && (<>
+        {currentStep === 5 && (<>
             <DashboardInputField text={"Nombre Completo"} placeholder={"Tu nombre completo real"} type={"text"}
                 value={fullName} onChange={(e) => { setFullName(e.target.value) }} maxLength={50} />
             <DashboardInputField text={"Fecha de nacimiento"} placeholder={""} type={"date"} value={birthDate} onChange={(e) => { setBirthDate(e.target.value); }} />
@@ -925,7 +862,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         <div className="d-flex m-auto justify-content-between mt-5" style={{ width: "70%" }}>
             <button className="btn general-btn w-25" onClick={prevStep}>Atras</button>
             <button className="btn general-btn w-25" onClick={nextStep}>
-                {currentStep < 4 ? (<>Siguiente</>) : (<>Enviar</>)}
+                {currentStep < 5 ? (<>Siguiente</>) : (<>Enviar</>)}
             </button>
         </div>
         {errorMessage && (<p className="text-danger d-flex m-auto" style={{ width: "70%" }}>{errorMessage}</p>)}

@@ -10,6 +10,7 @@ import Graphics from "../components/modelDashboard/Graphics";
 import ClientSupport from "../components/modelDashboard/ClientSupport";
 import {useNavigate, useParams} from "react-router-dom";
 import {useUser} from "../context/UserContext";
+import UpdateCoords from "../components/modelDashboard/UpdateCoords";
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function ModelDashboard (){
@@ -90,12 +91,9 @@ export default function ModelDashboard (){
                 {!isLogged ? (<>Primero debes iniciar sesion</>)
                     : (<>
                         {(fieldSelected === 1) && (<DashboardPersonalData hasDafault={modelData === undefined} data={modelData} id={modelData?.user_id}/>)}
-                        {fieldSelected === 2 && (<RequestUploadMedia modelName={modelData?.nombre}/>)}
-                        {fieldSelected === 3 && (<>
-                            {/* <Graphics />                        */}
-                        </>)}
+                        {fieldSelected === 2 && (<UpdateCoords data={modelData} />)}
+                        {fieldSelected === 3 && (<RequestUploadMedia modelName={modelData?.nombre}/>)}
                         {fieldSelected === 4 && (<ClientSupport />)}
-                        {fieldSelected === 5 && (<>Preguntas frecuentes</>)}
                 </>)}
             
             </div>

@@ -10,11 +10,12 @@ import BaseModal from "../components/BaseModal";
 import { useUser } from "../context/UserContext";
 import { getCookie } from "../utils/cookies";
 import SubscriptionModal from "../components/SubscriptionModal";
+import ShowMap from "../components/ShowMap";
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 const MEDIA_BASE_URL = process.env.REACT_APP_MEDIA_BASE_URL;
 
-const ArticleDetails = () => {
+const ModelDetails = () => {
   const { id } = useParams();
 
   const diasSemana = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"];
@@ -330,7 +331,7 @@ const ArticleDetails = () => {
           </nav>
 
           {coords && (
-            <InteractiveMap coords={coords} label={mapLabel} />
+            <ShowMap coords={coords} label={mapLabel} />
           )}
           <Galery items={data?.media} userId={data?.id} />
           <Services services={services}
@@ -397,4 +398,4 @@ const ArticleDetails = () => {
   );
 };
 
-export default ArticleDetails;
+export default ModelDetails;
