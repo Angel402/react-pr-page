@@ -14,7 +14,6 @@ const Home = () => {
     const [data, setData] = useState([]); // Estado para la lista original de artículos
     // const { location, getLocation } = useUserLocation(); // ELIMINADO
 
-    // Usamos el hook useLocationService para gestionar la ubicación
     const {
         location, // Coordenadas de la ubicación (lat/lon)
         cityName, // Nombre de la ciudad
