@@ -48,21 +48,23 @@ export default function InteractiveMap({ coords, setCoords}) {
     if (!coords || isNaN(lat) || isNaN(lon)) return <p>Coordenadas inválidas</p>;
 
     return (
-        <MapContainer center={position} zoom={13} style={{ height: '400px', width: '100%' }}>
-            <ChangeMapCenter position={position} />
-            <TileLayer
-                attribution='OpenStreetMap contributors'
-                url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-            />
-            <Marker
-                position={position}
-                draggable={true}
-                eventHandlers={{
-                    dragend: handleDragEnd,
-                }}
-            >
-                <Popup>Arrástrame</Popup>
-            </Marker>
-        </MapContainer>
+        <div style={{ zIndex: 1, position: 'relative' }}>
+            <MapContainer center={position} zoom={13} style={{ height: '400px', width: '100%' }}>
+                <ChangeMapCenter position={position} />
+                <TileLayer
+                    attribution='OpenStreetMap contributors'
+                    url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                />
+                <Marker
+                    position={position}
+                    draggable={true}
+                    eventHandlers={{
+                        dragend: handleDragEnd,
+                    }}
+                >
+                    <Popup>Arrástrame</Popup>
+                </Marker>
+            </MapContainer>
+        </div>
     );
 }

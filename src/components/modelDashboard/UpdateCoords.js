@@ -3,6 +3,9 @@ import React, {useEffect, useState} from "react";
 import {getCountries} from "@yusifaliyevpro/countries";
 import citiesData from "../../cities.json";
 import {getCookie} from "../../utils/cookies";
+import Alert from "react-bootstrap/Alert";
+import Spinner from "react-bootstrap/Spinner";
+import BaseModal from "../BaseModal";
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function UpdateCoords ({data}) {
@@ -13,6 +16,10 @@ export default function UpdateCoords ({data}) {
     const [selectedCity, setSelectedCity] = useState("");
     const [coords, setCoords] = useState("");
     const [filteredCities, setFilteredCities] = useState([]);
+    const [modifiesModal, setModifiesModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [successfulMessage, setSuccessfulMessage] = useState("");
 
 
 
@@ -92,7 +99,7 @@ export default function UpdateCoords ({data}) {
                 console.log(`Found ${cityNames.length} cities for country code ${countryCode}`);
             } else {
                 console.warn(`No cities found for country code ${countryCode} in local data.`);
-                setCities([]); // Clear cities if none found
+                setCities([]);
                 setFilteredCities([]);
             }
 
@@ -144,6 +151,10 @@ export default function UpdateCoords ({data}) {
     }
 
     async function syncTags(tagsToAdd, tagsToUpdate, tagsToDelete) {
+        setLoading(true);
+        setErrorMessage("");
+        setSuccessfulMessage("");
+
         try {
             if (tagsToAdd.length > 0) {
                 const response = await fetch(`${API_BASE_URL}tags/add/${data.id}`, {
@@ -180,22 +191,31 @@ export default function UpdateCoords ({data}) {
                 });
                 if (!response.ok) throw new Error('Error al eliminar tags');
             }
-            /*setLoading(false);
-            setModifiesModal(true);
-            setSuccessfulMessage("Datos actualizados correctamente \nEs necesario refrescar para seguir navegando");*/
+
+            setSuccessfulMessage("Se actualizó la información correctamente.");
         } catch (err) {
-            /*setLoading(false);
-            setErrorUploadMessage(`Error al sincronizar tags: ${err.message}`);*/
             console.error('Error al sincronizar tags:', err.message);
+            setErrorMessage("Hubo un problema al actualizar los datos. Intenta más tarde.");
+        } finally {
+            setLoading(false);
         }
     }
 
     async function handleUpdateCoords() {
+        setModifiesModal(true);
+        setLoading(true);
+        setErrorMessage("");
+        setSuccessfulMessage("");
 
         const oldTags = data.tags;
-        const tagList = [{tipo: 'mapa', valor: coords}, {tipo: 'country', valor: selectedCountry}, {tipo: 'ciudad', valor: selectedCity}];
+        const tagList = [
+            { tipo: 'mapa', valor: coords },
+            { tipo: 'country', valor: selectedCountry },
+            { tipo: 'ciudad', valor: selectedCity }
+        ];
+
         const { tagsToAdd, tagsToUpdate, tagsToDelete } = await prepareTagChanges(oldTags, tagList);
-        syncTags(tagsToAdd, tagsToUpdate, tagsToDelete);
+        await syncTags(tagsToAdd, tagsToUpdate, tagsToDelete);
     }
 
     return (<>
@@ -215,5 +235,40 @@ export default function UpdateCoords ({data}) {
                 <button className={"btn general-btn"} onClick={handleUpdateCoords}>Actualizar</button>
             </div>
         </div>
+        {modifiesModal && (
+            <BaseModal>
+                <h2 className="bg-base mt-2 mb-4">Actualización de ubicacion</h2>
+
+                {loading && (
+                    <div className="text-center mb-3">
+                        <Spinner animation="border" />
+                    </div>
+                )}
+
+                {errorMessage && (
+                    <Alert variant="danger" className="alert-glass-danger mb-3 text-center">
+                        {errorMessage}
+                    </Alert>
+                )}
+
+                {successfulMessage && (
+                    <Alert
+                        variant="success"
+                        className="alert-glass-success mb-3 text-center"
+                        style={{ whiteSpace: "pre-line" }}
+                    >
+                        {successfulMessage}
+                    </Alert>
+                )}
+
+                {!loading && !errorMessage && successfulMessage && (
+                    <div className="d-flex justify-content-center">
+                        <button className="btn general-btn" onClick={() => window.location.reload()}>
+                            Refrescar
+                        </button>
+                    </div>
+                )}
+            </BaseModal>
+        )}
     </>);
 }
