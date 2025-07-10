@@ -71,7 +71,9 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
             console.log('Ciudad seleccionada:', cityNames.city);
             console.log('Latitud:', cityNames.lat);
             console.log('Longitud:', cityNames.lng);
-            if (selectedCity === data.tags.find((a) => a.tipo === "ciudad")?.valor && coords === data.tags.find((a) => a.tipo === "mapa")?.valor) return;
+            if (!hasDafault) {
+                if (selectedCity === data.tags.find((a) => a.tipo === "ciudad")?.valor && coords === data.tags.find((a) => a.tipo === "mapa")?.valor) return;
+            }
             setCoords(`${cityNames.lat},${cityNames.lng}`);
             let token = getCookie("token");
 
@@ -99,7 +101,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
         }
     }, [selectedCity]);
 
-    useEffect(()=>{
+    useEffect(() => {
         console.log(coords);
     }, [coords]);
 
@@ -504,7 +506,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
                     setErrorMessage("Tus medidas deben estar entre 0 y 200 (cm)");
                     return;
                 }
-                if (!countries.map((a) => a.name).includes(nationality  )) {
+                if (!countries.map((a) => a.name).includes(nationality)) {
                     setErrorMessage("Selecciona un pais");
                     return;
                 }
