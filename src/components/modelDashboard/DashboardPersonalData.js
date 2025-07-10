@@ -803,6 +803,7 @@ export default function DashboardPersonalData({ hasDafault, data, id }) {
                         {showedDropdown === 14 && (<>
                             <div
                                 className="position-absolute mt-2 p-3 model-tag rounded shadow"
+                                style={{zIndex: 1}}
                             >
                                 {days.map((day, index) => (
                                     <div key={index} className="form-check">
